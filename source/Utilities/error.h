@@ -1,13 +1,8 @@
-#ifndef Feature_Extraction_error_h
-#define Feature_Extraction_error_h
+#ifndef __Feature_Extraction__error__
+#define __Feature_Extraction__error__
 
 #include <string>
-#include <iostream>
 
-void error (std::string message, int code)
-{
-    std::cerr << "Error: " << message << "\n";
-    std::exit(code);
-}
+void error (std::string, int);
 
-#endif
+#endif /* defined(__Feature_Extraction__error__) */
