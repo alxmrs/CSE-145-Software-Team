@@ -11,7 +11,7 @@ Complex* FFT(TYPE* A, int N)
     if (N == 1)
     {
         Complex* A_complex = new Complex[1];
-        A_complex[0]       = Complex(A[0], 0); 
+        A_complex[0]       = Complex((double)A[0], 0.0);
         
         return A_complex;
     }
