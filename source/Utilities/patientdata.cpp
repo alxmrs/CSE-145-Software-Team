@@ -4,46 +4,45 @@
 
 PatientData* loadCSV(std::string filename)
 {
+    //Initialise file stream
     std::ifstream file_stream ((char*)filename.c_str());
     std::string   buffer;
     
-    PatientData * pdata = new PatientData;
+    //Struct to hold data. Defined in "patientdata.h"
+    PatientData* pdata = new PatientData;
     
+    //Read number of columns
     file_stream >> buffer;
-    
     if (buffer != "ncols")
         error("ncols not specified in .csv file", -1);
-    
     file_stream >> pdata->ncols;
-    file_stream >> buffer;
     
+    //Read number of rows
+    file_stream >> buffer;
     if (buffer != "nrows")
         error("nrows not specified in .csv file", -1);
-    
     file_stream >> pdata->nrows;
-    file_stream >> buffer;
     
+    //Read data length (in seconds)
+    file_stream >> buffer;
     if (buffer != "data_length_sec")
         error("data_length_sec not specified in .csv file", -1);
-    
     file_stream >> pdata->data_length_sec;
-    file_stream >> buffer;
     
+    //Read sampling frequency
+    file_stream >> buffer;
     if (buffer != "sampling_freq")
         error("sampling_freq not specified in .csv file", -1);
-    
     file_stream >> pdata->sampling_freq;
     
+    //Read patient data
     pdata->data = (short int **) malloc((size_t)pdata->nrows*sizeof(short int *));
     for(int r=0; r<pdata->nrows; r++)
-        pdata->data[r] = (short int *) malloc((size_t)pdata->ncols*sizeof(short int));
-    
-    for(int r=0; r<pdata->nrows; r++)
     {
+        pdata->data[r] = (short int *) malloc((size_t)pdata->ncols*sizeof(short int));
         for(int c=0; c<pdata->ncols; c++)
             file_stream >> pdata->data[r][c];
     }
-
     
     return pdata;
 }
