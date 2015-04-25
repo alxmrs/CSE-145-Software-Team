@@ -1,6 +1,7 @@
 #include "PatientData.h"
 #include "error.h"
 #include <limits>
+#include <iostream>
 
 PatientData :: PatientData () { }
 
@@ -51,7 +52,9 @@ PatientData :: PatientData (std::string fn, unsigned short int nsegs)
     {
         data[r] = (short int *) malloc((size_t)ncols*sizeof(short int));
         for(int c=0; c<ncols; c++)
+        {
             file_stream >> data[r][c];
+        }
     }
 }
 
@@ -84,6 +87,14 @@ void PatientData :: begin()
         for(int c=0; c<ncols; c++)
             file_stream >> data[r][c];
     }
+}
+
+void PatientData :: print()
+{
+    std::cout << "Number of columns:        " << ncols << "\n";
+    std::cout << "Number of rows:           " << nrows << "\n";
+    std::cout << "Data length in seconds:   " << data_length_sec << "\n";
+    std::cout << "Sampling frequency in Hz: " << sampling_freq << "\n";
 }
 
 unsigned short int PatientData :: getNRows() { return nrows; }

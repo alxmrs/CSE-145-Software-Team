@@ -23,7 +23,7 @@ private:
     unsigned short int data_length_sec;
     unsigned short int sampling_freq;
     unsigned short int num_segments, curr_segment;
-    unsigned short int nrows, ncols;
+    unsigned int nrows, ncols;
     
     short int ** data;
     
@@ -34,6 +34,7 @@ public:
     
     void next();
     void begin();
+    void print();
     
     unsigned short int getNRows();
     unsigned short int getNCols();
