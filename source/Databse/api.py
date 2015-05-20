@@ -24,6 +24,7 @@ Table Fields:
 
 import sqlite3 as lite
 import datetime as dt
+import time
 import json
 import sys
 
@@ -50,8 +51,8 @@ class DataStorage:
                 DROP TABLE IF EXISTS EEG_data;
                 CREATE TABLE EEG_data(
                   id INTEGER PRIMARY KEY,
-                  group_label VARCHAR(20),
                   subj_name VARCHAR(20),
+                  group_label VARCHAR(20),
                   date DATETIME,
                   data BLOB(1000000000)
                 ); """)
@@ -64,7 +65,7 @@ class DataStorage:
 
     def cleanDatabase(self):
         with self.conn:
-            self.cur.execute("DELETE FROM TABLE {}".format(self.table_name))
+            self.cur.execute("DELETE FROM {}".format(self.table_name))
 
     def bootstrapData(self):
 
@@ -73,7 +74,7 @@ class DataStorage:
             'channel_locations': ["Fp1", "Fp2", "F3", "F4", "C3", "Cz", "C4", "ref"],
             'sample_rate': 250,
             'reference': 8,
-            'data': "1,2,3,4,5,6,7,8"
+            'data': ["1,2,3,4,5,6,7,8"]
         }
 
         initdata = (
@@ -86,37 +87,85 @@ class DataStorage:
         with self.conn:
             self.cur.executemany("INSERT INTO {}(subj_name, group_label, date, data) VALUES(?, ?, ?, ?)".format(self.table_name), initdata)
                 #sendAllData
+
+
+    def storeLastHourOfData(self, subj_name, group_label, data):
+        with self.conn:
+            fields = (subj_name, group_label, dt.datetime.today(), json.dumps(data))
+            self.cur.execute("INSERT INTO {} (subj_name, group_label, date, data) VALUES(?,?,?,?)".format(self.table_name), fields)
+
+    def printAllData(self):
+        with self.conn:
+            self.cur.execute("SELECT * FROM {}".format(self.table_name))
+
+            rows = self.cur.fetchall()
+
+            for row in rows:
+                print row
+
     def sendAllData(self):
         with self.conn:
             self.cur.execute("SELECT * FROM {}".format(table_name))
 
             rows = self.cur.fetchall()
 
-            for row in rows:
-                print row
-    '''
-
-    #storeLastHourOfData
-    def storeLastHourOfData(self):
-
-
-    #sendLastHourOfData
-    def sendLastHourOfData(self):
-
-
+            return rows
 
     #sendAllSegmentsBySubject
-    def sendAllSegmentsBySubject(self):
+    def sendAllSegmentsBySubject(self, subj):
+        with self.conn:
+            self.cur.execute("SELECT * FROM {} WHERE subj_name='{}';".format(self.table_name, subj))
+
+            rows = self.cur.fetchall()
+
+            return rows
 
     #sendAllSegmentsByDateRange
-    def sendAllSegmentsByDateRange(self):
+    def sendAllSegmentsByDateRange(self, start='2015-05-19', end=dt.datetime.today()):
+        with self.conn:
+            self.cur.execute("SELECT * FROM {0} WHERE date BETWEEN ".format(self.table_name) +
+                "datetime('{0}') AND datetime('{1}');".format(start, end))
+
+            rows = self.cur.fetchall()
+
+            return rows
 
     #sendAllSegmentsByGroup
-    def sendAllSegmentsByGroup(self):
-    '''
+    def sendAllSegmentsByGroup(self, group="control"):
+        with self.conn:
+            self.cur.execute("SELECT * FROM {} WHERE group_label='{}';".format(self.table_name, group))
+
+            rows = self.cur.fetchall()
+
+            return rows
+
+
 
 if __name__ == '__main__':
     DB = DataStorage()
     DB.cleanDatabase()
     DB.bootstrapData()
+
+    DB.storeLastHourOfData("Morgan S.", "Control",
+        {
+        'num_channels': 2,
+        'channel_labels': ["Pz", "Cz"],
+        'sample_rate': 250,
+        'reference': 2,
+        'data': [[1.01, 1.02], [1.01, 1.02]]
+        })
+
+    # tmp = raw_input("Do you want to print the database? [Y/N]")
+
+    # if('Y' in tmp.upper() ):
+    #     DB.printAllData()
+    print "Printing all hardons"
+    print DB.sendAllSegmentsByGroup('Hardons')
+
+    print "printing AlexR"
+    print DB.sendAllSegmentsBySubject('AlexR')
+
+    print "printing wide date range"
+    print DB.sendAllSegmentsByDateRange('2015-01-01', '2015-05-20')
+
 
