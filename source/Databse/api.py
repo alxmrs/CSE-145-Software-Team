@@ -12,11 +12,11 @@ Table Fields:
     date
     id
     data {
-        num_channels
-        channel_locations
-        sample_rate
-        reference
-        data
+        num_channels:       Int
+        channel_locations:  String list
+        sample_rate:        Int
+        reference:          Int (index of the above list)
+        data:               TBD
     }
 
 
@@ -24,7 +24,6 @@ Table Fields:
 
 import sqlite3 as lite
 import datetime as dt
-import time
 import json
 import sys
 
@@ -141,31 +140,31 @@ class DataStorage:
 
 
 
-if __name__ == '__main__':
-    DB = DataStorage()
-    DB.cleanDatabase()
-    DB.bootstrapData()
+# if __name__ == '__main__':
+#     DB = DataStorage()
+#     DB.cleanDatabase()
+#     DB.bootstrapData()
 
-    DB.storeLastHourOfData("Morgan S.", "Control",
-        {
-        'num_channels': 2,
-        'channel_labels': ["Pz", "Cz"],
-        'sample_rate': 250,
-        'reference': 2,
-        'data': [[1.01, 1.02], [1.01, 1.02]]
-        })
+#     DB.storeLastHourOfData("Morgan S.", "Control",
+#         {
+#         'num_channels': 2,
+#         'channel_labels': ["Pz", "Cz"],
+#         'sample_rate': 250,
+#         'reference': 2,
+#         'data': [[1.01, 1.02], [1.01, 1.02]]
+#         })
 
-    # tmp = raw_input("Do you want to print the database? [Y/N]")
+#     # tmp = raw_input("Do you want to print the database? [Y/N]")
 
-    # if('Y' in tmp.upper() ):
-    #     DB.printAllData()
-    print "Printing all hardons"
-    print DB.sendAllSegmentsByGroup('Hardons')
+#     # if('Y' in tmp.upper() ):
+#     #     DB.printAllData()
+#     print "Printing all hardons"
+#     print DB.sendAllSegmentsByGroup('Hardons')
 
-    print "printing AlexR"
-    print DB.sendAllSegmentsBySubject('AlexR')
+#     print "printing AlexR"
+#     print DB.sendAllSegmentsBySubject('AlexR')
 
-    print "printing wide date range"
-    print DB.sendAllSegmentsByDateRange('2015-01-01', '2015-05-20')
+#     print "printing wide date range"
+#     print DB.sendAllSegmentsByDateRange('2015-01-01', '2015-05-20')
 
 
