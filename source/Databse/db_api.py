@@ -57,11 +57,11 @@ class DataStorage:
                   data BLOB(1000000000)
                 ); """)
 
-            self.bootstrapData()
+            # self.bootstrapData()
             # Print database version
-            # self.cur.execute('SELECT SQLITE_VERSION()')
-            # data = self.cur.fetchone()
-            # print "SQLite version: %s" % data
+            self.cur.execute('SELECT SQLITE_VERSION()')
+            vers = self.cur.fetchone()
+            print "SQLite version: %s" % vers
 
     def cleanDatabase(self):
         with self.conn:
@@ -103,6 +103,15 @@ class DataStorage:
             for row in rows:
                 print row
 
+    def sendLastHourOfData(self):
+        with self.conn:
+            lid = self.cur.lastrowid
+            self.cur.execute("SELECT * FROM {} WHERE id='{}';".format(self.table_name, lid))
+
+            row = self.cur.fetchall()
+
+            return row
+
     def sendAllData(self):
         with self.conn:
             self.cur.execute("SELECT * FROM {}".format(table_name))
@@ -141,31 +150,31 @@ class DataStorage:
 
 
 
-if __name__ == '__main__':
-    DB = DataStorage()
-    DB.cleanDatabase()
-    DB.bootstrapData()
+# if __name__ == '__main__':
+#     DB = DataStorage()
+#     DB.cleanDatabase()
+#     DB.bootstrapData()
 
-    DB.storeLastHourOfData("Morgan S.", "Control",
-        {
-        'num_channels': 2,
-        'channel_labels': ["Pz", "Cz"],
-        'sample_rate': 250,
-        'reference': 2,
-        'data': [[1.01, 1.02], [1.01, 1.02]]
-        })
+#     DB.storeLastHourOfData("Morgan S.", "Control",
+#         {
+#         'num_channels': 2,
+#         'channel_labels': ["Pz", "Cz"],
+#         'sample_rate': 250,
+#         'reference': 2,
+#         'data': [[1.01, 1.02], [1.01, 1.02]]
+#         })
 
-    # tmp = raw_input("Do you want to print the database? [Y/N]")
+#     # tmp = raw_input("Do you want to print the database? [Y/N]")
 
-    # if('Y' in tmp.upper() ):
-    #     DB.printAllData()
-    print "Printing all hardons"
-    print DB.sendAllSegmentsByGroup('Hardons')
+#     # if('Y' in tmp.upper() ):
+#     #     DB.printAllData()
+#     print "Printing all hardons"
+#     print DB.sendAllSegmentsByGroup('Hardons')
 
-    print "printing AlexR"
-    print DB.sendAllSegmentsBySubject('AlexR')
+#     print "printing AlexR"
+#     print DB.sendAllSegmentsBySubject('AlexR')
 
-    print "printing wide date range"
-    print DB.sendAllSegmentsByDateRange('2015-01-01', '2015-05-20')
+#     print "printing wide date range"
+#     print DB.sendAllSegmentsByDateRange('2015-01-01', '2015-05-20')
 
 
