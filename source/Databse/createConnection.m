@@ -5,9 +5,11 @@ function [ t_obj ] = createConnection( host, port, byteAvail, mode )
 
 
 
-
+% t_obj;
 try
-    t_obj = tcpip(host, port, 'NetworkRole', 'client', 'localport', randi([2000, 65535], 1));
+    localport = randi([2000, 65535], 1)
+    t_obj = tcpip(host, port, 'NetworkRole', 'client',...
+    'localport', localport);
 catch ME
     display(ME.identifier);
     display('Safely closing connection');
@@ -18,7 +20,7 @@ end
 
 if nargin == 2
     mode = 'byte';
-    byteAvail = 6335;
+    byteAvail = 2^13; % 2^12;
 end
 if nargin == 3
    mode = 'byte'; 

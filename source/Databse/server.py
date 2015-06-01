@@ -15,7 +15,7 @@ of EEG/EKG data in to a SQLite database.
 import argparse # new in Python 2.7
 import db_api as db
 import socket
-import Queue
+from Queue import Queue
 import sys
 import json
 from jsonrpc import JSONRPCResponseManager, dispatcher
@@ -25,15 +25,22 @@ class EEGServer:
 
     def __init__(self, host='localhost', port=8888):
         # Parameters
-        self.MAX_BYTES = 2**27
+        self.MAX_BYTES = 2**15
 
         self.db = db.DataStorage()
 
+        self.entry = dict()
+        self.subj_name = ''
+        self.group_name = ''
+
         # add class methods to rpc disbatcher
-        dispatcher['foo']       = self.foo
-        dispatcher['storeData'] = self.storeData
-        dispatcher['printData'] = self.printData
+        dispatcher['foo']             = self.foo
+        dispatcher['storeData']       = self.storeData
+        dispatcher['printData']       = self.printData
         dispatcher['writeDataToFile'] = self.writeDataToFile
+        dispatcher['readMetadata']    = self.readMetadata
+        dispatcher['readDataSegment'] = self.readDataSegment
+        dispatcher['flush']           = self.flush
 
         #
         self.buff = Queue()
@@ -90,8 +97,33 @@ class EEGServer:
     def foo(self, name):
         return "Hello, {}".format(name)
 
+    def readMetadata(self, subj_name='test_subj', group_name='', num_channels=8,
+        channel_labels='', sample_rate=250, reference=1):
+        self.subj_name  = subj_name
+        self.group_name = group_name
+        self.entry['num_channels']   = num_channels
+        self.entry['channel_labels'] = channel_labels
+        self.entry['sample_rate']    = sample_rate
+        self.entry['reference']      = reference
+
+        # self.db.storeLastHourOfData(subj_name, group_name, entry)
+
+        return "Success: Read Metadata."
+
     def readDataSegment(self, data):
-        self.buff.add(data)
+        self.buff.put(data)
+        return "Success: Added data segment to buffer."
+
+    def flush(self):
+        # Store data
+        self.db.storeLastHourOfData(self.subj_name, self.group_name, self.entry)
+
+        # Reset class buffers
+        self.entry      = dict()
+        self.subj_name  = ''
+        self.group_name = ''
+
+        return "Success: Stored buffered data to database."
 
 
     def storeData(self, subj_name='test_subj', group_name='', num_channels=8,

@@ -1,11 +1,15 @@
-function [ response ] = json_rpc( method, params, id, t)
-%json-rpc client for json-rpc protocol 
+function response  = json_rpc( method, params, id, t)
+%json-rpc client for json-rpc protocol. 
 % dependencies: jsonlab-1.0 and jsonrpc2. 
-% Make sure to modify the addpaths at top of function.   
+% Make sure to modify the addpaths at top of function. 
+% EG: response  = json_rpc( method, params, id, t)
 addpath('/Users/Xander/Documents/MATLAB/jsonlab-1.0/jsonlab');
 addpath('/Users/Xander/Documents/MATLAB/jsonrpc2/jsonrpc2/');
 
+% Matlab --> Python arrays
+% addpath('/Users/Xander/Documents/MATLAB/array'); % http://tinyurl.com/qyohjrc
 
+DEBUG = 0;
 
 % Check that params is a struct
 if ~isstruct(params)
@@ -16,8 +20,9 @@ end
 % Generate JSON request
 request = jsonrpc2.JSONRPC2Request(id, method, params);
 json_request = request.toJSONString();
-json_request(json_request == char(10)) = ' '; % remove the newline characters from json_request. 
-disp(json_request);
+json_request(json_request == char(10)) = ' '; % remove the newline chars
+
+% disp(json_request);
 
 
 if nargin == 3
@@ -35,29 +40,35 @@ if nargin == 3
     end
 end
 
-% set timeout value to be large
+% set timeout value to be 20 seconds
 set(t,'timeout',20);
 
 try
-    disp('Sending json request');
+    if(DEBUG) 
+        disp('Sending json request'); 
+    end
     fwrite(t, json_request);
 catch ME
     display(ME.identifier);
     display('Safely closing connection');
     fclose(t);
     delete(t);
-    
     rethrow(ME);
 end
-disp('Request sent successfully.');
-disp('Waiting for response...');
+if(DEBUG)
+    disp('Request sent successfully.');
+    disp('Waiting for response...');
+end
+
 
 json_resp = '';
 while(t.BytesAvailable == 0)
 end
 
 while(t.BytesAvailable > 0)
-    disp('incoming response...');
+    if(DEBUG) 
+        disp('incoming response...'); 
+    end
      try
         json_resp = fread(t, t.BytesAvailable);
     catch ME
@@ -65,8 +76,6 @@ while(t.BytesAvailable > 0)
         display('Safely closing connection');
         fclose(t);
         delete(t);
-    %     echopip('off');
-%         disp(msg);
 
         json_resp = savejson('', {'message', 'error with read'});
 
@@ -79,9 +88,9 @@ if(isnumeric(json_resp(1)))
 end
 
 
-response = json_resp';%loadjson(json_resp);
-disp('recieved:');
-disp(response);
+response = json_resp'; %loadjson(json_resp);
+if(DEBUG) disp('recieved:'); end
+% disp(response);
 
 
 
